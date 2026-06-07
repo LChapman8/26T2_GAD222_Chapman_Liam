@@ -1,0 +1,212 @@
+fileFormatVersion: 2
+guid: e9784a6f8dad5d141b3a30ebc093808a
+ModelImporter:
+  serializedVersion: 23
+  fileIDToRecycleName:
+    100000: //RootNode
+    100002: floppy disk
+    100004: floppy disk.001
+    100006: floppy disk.002
+    100008: floppy disk.003
+    100010: floppy disk.004
+    100012: floppy disk.005
+    100014: glass
+    100016: glass.001
+    100018: glass.002
+    100020: glass.003
+    100022: glass.004
+    100024: glass.005
+    100026: glass.006
+    100028: glass.007
+    100030: glass.008
+    100032: glass.009
+    100034: paper
+    100036: paper.001
+    100038: xray
+    100040: xray.001
+    400000: //RootNode
+    400002: floppy disk
+    400004: floppy disk.001
+    400006: floppy disk.002
+    400008: floppy disk.003
+    400010: floppy disk.004
+    400012: floppy disk.005
+    400014: glass
+    400016: glass.001
+    400018: glass.002
+    400020: glass.003
+    400022: glass.004
+    400024: glass.005
+    400026: glass.006
+    400028: glass.007
+    400030: glass.008
+    400032: glass.009
+    400034: paper
+    400036: paper.001
+    400038: xray
+    400040: xray.001
+    2100000: glass
+    2100002: details.001
+    2300000: floppy disk
+    2300002: floppy disk.001
+    2300004: floppy disk.002
+    2300006: floppy disk.003
+    2300008: floppy disk.004
+    2300010: floppy disk.005
+    2300012: glass
+    2300014: glass.001
+    2300016: glass.002
+    2300018: glass.003
+    2300020: glass.004
+    2300022: glass.005
+    2300024: glass.006
+    2300026: glass.007
+    2300028: glass.008
+    2300030: glass.009
+    2300032: paper
+    2300034: paper.001
+    2300036: xray
+    2300038: xray.001
+    3300000: floppy disk
+    3300002: floppy disk.001
+    3300004: floppy disk.002
+    3300006: floppy disk.003
+    3300008: floppy disk.004
+    3300010: floppy disk.005
+    3300012: glass
+    3300014: glass.001
+    3300016: glass.002
+    3300018: glass.003
+    3300020: glass.004
+    3300022: glass.005
+    3300024: glass.006
+    3300026: glass.007
+    3300028: glass.008
+    3300030: glass.009
+    3300032: paper
+    3300034: paper.001
+    3300036: xray
+    3300038: xray.001
+    4300000: glass.003
+    4300002: glass.004
+    4300004: glass.005
+    4300006: glass.006
+    4300008: glass.002
+    4300010: glass.007
+    4300012: glass.008
+    4300014: glass.009
+    4300016: glass
+    4300018: glass.001
+    4300020: xray
+    4300022: paper
+    4300024: paper.001
+    4300026: xray.001
+    4300028: floppy disk.002
+    4300030: floppy disk.001
+    4300032: floppy disk.005
+    4300034: floppy disk.004
+    4300036: floppy disk.003
+    4300038: floppy disk
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: details.001
+    second: {fileID: 2100000, guid: 797c512fc4739184dacd9b3af421947d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: glass
+    second: {fileID: 2100000, guid: e116f3c5f7b5abb4e8e2608cff45f21f, type: 2}
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    rigImportErrors: 
+    rigImportWarnings: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    importConstraints: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    useSRGBMaterialColor: 1
+    importVisibility: 1
+    importBlendShapes: 1
+    importCameras: 1
+    importLights: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    preserveHierarchy: 0
+    indexFormat: 0
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+    previousCalculatedGlobalScale: 1
+    hasPreviousCalculatedGlobalScale: 0
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalCalculationMode: 4
+    legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
+    blendShapeNormalImportMode: 1
+    normalSmoothingSource: 0
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    serializedVersion: 2
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 0
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 190302
+  packageName: Sci-Fi Medical Bay
+  packageVersion: 2.0
+  assetPath: Assets/CobbleGames/Meshes/clutter.fbx
+  uploadId: 467311

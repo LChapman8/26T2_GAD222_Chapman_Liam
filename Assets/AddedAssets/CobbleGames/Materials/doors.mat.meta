@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: b1d896f8326dd774ab02c6ce3f4fb642
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 190302
+  packageName: Sci-Fi Medical Bay
+  packageVersion: 2.0
+  assetPath: Assets/CobbleGames/Materials/doors.mat
+  uploadId: 467311

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 40d0116dc3b646f4dbee1028ddb2ed2b
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 190302
+  packageName: Sci-Fi Medical Bay
+  packageVersion: 2.0
+  assetPath: Assets/CobbleGames/Materials/container.mat
+  uploadId: 467311

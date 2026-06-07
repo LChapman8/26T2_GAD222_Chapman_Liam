@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: e116f3c5f7b5abb4e8e2608cff45f21f
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 190302
+  packageName: Sci-Fi Medical Bay
+  packageVersion: 2.0
+  assetPath: Assets/CobbleGames/Materials/glass.mat
+  uploadId: 467311
