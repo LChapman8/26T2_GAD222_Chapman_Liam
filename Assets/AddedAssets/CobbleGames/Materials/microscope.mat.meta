@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 30158e207c0e64a4f920dc0f91c1d712
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 190302
+  packageName: Sci-Fi Medical Bay
+  packageVersion: 2.0
+  assetPath: Assets/CobbleGames/Materials/microscope.mat
+  uploadId: 467311
