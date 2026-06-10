@@ -20,11 +20,20 @@ public class MemorySequenceUI : MonoBehaviour
 
     private void Awake()
     {
-        ResetSequence();
+        HideUI();
+    }
+
+    private void Start()
+    {
+        HideUI();
     }
 
     public void StartSequence()
     {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+        gameObject.SetActive(true);
+
         if (sequenceCoroutine != null)
             StopCoroutine(sequenceCoroutine);
 
@@ -33,7 +42,7 @@ public class MemorySequenceUI : MonoBehaviour
 
     private IEnumerator PlaySequence()
     {
-        ResetSequence();
+        ShowTextOnly();
 
         foreach (string line in sequenceLines)
         {
@@ -45,10 +54,25 @@ public class MemorySequenceUI : MonoBehaviour
             continueButton.gameObject.SetActive(true);
     }
 
-    private void ResetSequence()
+    private void ShowTextOnly()
     {
         if (sequenceText != null)
+        {
+            sequenceText.gameObject.SetActive(true);
             sequenceText.text = "";
+        }
+
+        if (continueButton != null)
+            continueButton.gameObject.SetActive(false);
+    }
+
+    public void HideUI()
+    {
+        if (sequenceText != null)
+        {
+            sequenceText.text = "";
+            sequenceText.gameObject.SetActive(false);
+        }
 
         if (continueButton != null)
             continueButton.gameObject.SetActive(false);
