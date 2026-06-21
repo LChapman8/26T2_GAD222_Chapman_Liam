@@ -1,11 +1,26 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class ProcedureTrigger : MonoBehaviour
+public class MemoryTransitionTrigger : MonoBehaviour
 {
+    [Header("Prompt")]
     public GameObject promptUI;
+    public TMP_Text promptText;
+    public string promptMessage = "Press 'E' to begin procedure";
+
+    [Header("Scene Objects")]
     public GameObject objectToDisable;
-    public GameObject objectToEnable;
+    public GameObject transitionScene;
+    public GameObject nextMemoryScene;
+
+    [Header("Transition Text")]
+    [TextArea]
+    public string[] sequenceLines;
+
+    public string buttonText = "Enter Memory";
+
+    [Header("Manager")]
     public SceneTransitionManager transitionManager;
 
     private bool playerInZone;
@@ -26,7 +41,13 @@ public class ProcedureTrigger : MonoBehaviour
             if (promptUI != null)
                 promptUI.SetActive(false);
 
-            transitionManager.SwapObjects(objectToDisable, objectToEnable);
+            transitionManager.BeginMemoryTransition(
+                objectToDisable,
+                transitionScene,
+                nextMemoryScene,
+                sequenceLines,
+                buttonText
+            );
         }
     }
 
@@ -35,6 +56,9 @@ public class ProcedureTrigger : MonoBehaviour
         if (other.CompareTag("Player") && !hasTriggered)
         {
             playerInZone = true;
+
+            if (promptText != null)
+                promptText.text = promptMessage;
 
             if (promptUI != null)
                 promptUI.SetActive(true);

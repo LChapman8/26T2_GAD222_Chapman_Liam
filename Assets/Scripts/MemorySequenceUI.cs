@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
@@ -8,10 +9,7 @@ public class MemorySequenceUI : MonoBehaviour
     [Header("UI")]
     public TMP_Text sequenceText;
     public Button continueButton;
-
-    [Header("Sequence Lines")]
-    [TextArea]
-    public string[] sequenceLines;
+    public TMP_Text buttonText;
 
     [Header("Timing")]
     public float timeBetweenLines = 1.5f;
@@ -23,47 +21,44 @@ public class MemorySequenceUI : MonoBehaviour
         HideUI();
     }
 
-    private void Start()
-    {
-        HideUI();
-    }
-
-    public void StartSequence()
+    public void StartSequence(string[] lines, string continueButtonText, Action onContinue)
     {
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+
         gameObject.SetActive(true);
 
         if (sequenceCoroutine != null)
             StopCoroutine(sequenceCoroutine);
 
-        sequenceCoroutine = StartCoroutine(PlaySequence());
+        continueButton.onClick.RemoveAllListeners();
+        continueButton.onClick.AddListener(() => onContinue?.Invoke());
+
+        if (buttonText != null)
+            buttonText.text = continueButtonText;
+
+        sequenceCoroutine = StartCoroutine(PlaySequence(lines));
     }
 
-    private IEnumerator PlaySequence()
+    private IEnumerator PlaySequence(string[] lines)
     {
         ShowTextOnly();
 
-        foreach (string line in sequenceLines)
+        foreach (string line in lines)
         {
             sequenceText.text = line;
             yield return new WaitForSeconds(timeBetweenLines);
         }
 
-        if (continueButton != null)
-            continueButton.gameObject.SetActive(true);
+        continueButton.gameObject.SetActive(true);
     }
 
     private void ShowTextOnly()
     {
-        if (sequenceText != null)
-        {
-            sequenceText.gameObject.SetActive(true);
-            sequenceText.text = "";
-        }
+        sequenceText.gameObject.SetActive(true);
+        sequenceText.text = "";
 
-        if (continueButton != null)
-            continueButton.gameObject.SetActive(false);
+        continueButton.gameObject.SetActive(false);
     }
 
     public void HideUI()
