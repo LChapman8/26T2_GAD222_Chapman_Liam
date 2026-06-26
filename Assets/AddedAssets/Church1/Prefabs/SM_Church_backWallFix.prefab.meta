@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: abc00000000005688692576365924888
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 316929
+  packageName: Church (URP)
+  packageVersion: 1.0
+  assetPath: Assets/Church1/Prefabs/SM_Church_backWallFix.prefab
+  uploadId: 748174

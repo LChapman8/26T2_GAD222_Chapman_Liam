@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: 7caa45648cecd11448190f33f55c8d98
+ScriptedImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 2
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 11500000, guid: 625f186215c104763be7675aa2d941aa, type: 3}
+AssetOrigin:
+  serializedVersion: 1
+  productId: 316929
+  packageName: Church (URP)
+  packageVersion: 1.0
+  assetPath: Assets/Church1/Source/DEXSOFTS MasterShaders/MasterPainterOpaque.shadergraph
+  uploadId: 748174

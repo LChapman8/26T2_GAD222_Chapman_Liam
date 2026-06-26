@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: ac00f761133cefe40b3f6cf130f0f114
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 316929
+  packageName: Church (URP)
+  packageVersion: 1.0
+  assetPath: Assets/Church1/Source/Materials/M_Flame.mat
+  uploadId: 748174

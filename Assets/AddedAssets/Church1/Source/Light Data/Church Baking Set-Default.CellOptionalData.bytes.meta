@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 57cb16c8dcb9ec04189b5e991ffe2a08
+TextScriptImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 316929
+  packageName: Church (URP)
+  packageVersion: 1.0
+  assetPath: Assets/Church1/Source/Light Data/Church Baking Set-Default.CellOptionalData.bytes
+  uploadId: 748174

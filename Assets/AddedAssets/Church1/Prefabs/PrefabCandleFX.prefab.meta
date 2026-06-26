@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 02419abd5b173444c903fe3d4c22035a
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 316929
+  packageName: Church (URP)
+  packageVersion: 1.0
+  assetPath: Assets/Church1/Prefabs/PrefabCandleFX.prefab
+  uploadId: 748174

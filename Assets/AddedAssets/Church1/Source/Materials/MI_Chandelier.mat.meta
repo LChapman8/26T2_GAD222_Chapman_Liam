@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: abc00000000013117005143683908396
+NativeFormatImporter:
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 316929
+  packageName: Church (URP)
+  packageVersion: 1.0
+  assetPath: Assets/Church1/Source/Materials/MI_Chandelier.mat
+  uploadId: 748174
