@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 06c4022882cf6374d8c6e4f42719e4cc
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 278415
+  packageName: Realistic Modern Homes Dining Room Asset Package
+  packageVersion: 1.0
+  assetPath: Assets/AlignedGames/Modern Homes Small Dining Room Asset Package/Scripts/Behaviours/FlyCameraBehaviour.cs
+  uploadId: 647263
