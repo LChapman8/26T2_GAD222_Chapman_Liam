@@ -11,9 +11,17 @@ public class MemoryTransitionUI : MonoBehaviour
     [SerializeField] private Button continueButton;
     [SerializeField] private TMP_Text continueButtonText;
 
+    [Header("Robot Voice")]
+    [SerializeField] private AudioSource robotVoiceSource;
+
     [Header("Timing")]
     [SerializeField] private float initialDelay = 0.5f;
-    [SerializeField] private float timeBetweenLines = 1.5f;
+
+    [Tooltip("Used if a transition line has no audio clip.")]
+    [SerializeField] private float fallbackLineDuration = 1.5f;
+
+    [Tooltip("Small pause between robot lines.")]
+    [SerializeField] private float pauseBetweenLines = 0.2f;
 
     private Coroutine sequenceRoutine;
     private Action continueAction;
@@ -21,10 +29,17 @@ public class MemoryTransitionUI : MonoBehaviour
     private void Awake()
     {
         HideUI();
+
+        if (robotVoiceSource != null)
+        {
+            robotVoiceSource.playOnAwake = false;
+            robotVoiceSource.loop = false;
+        }
     }
 
     public void Begin(
         string[] lines,
+        AudioClip[] voiceClips,
         string buttonLabel,
         Action onContinue)
     {
@@ -38,48 +53,88 @@ public class MemoryTransitionUI : MonoBehaviour
         if (continueButtonText != null)
             continueButtonText.text = buttonLabel;
 
-        continueButton.onClick.RemoveAllListeners();
-        continueButton.onClick.AddListener(HandleContinueClicked);
+        if (continueButton != null)
+        {
+            continueButton.onClick.RemoveAllListeners();
+            continueButton.onClick.AddListener(HandleContinueClicked);
+            continueButton.interactable = true;
+        }
 
         if (sequenceRoutine != null)
             StopCoroutine(sequenceRoutine);
 
-        sequenceRoutine = StartCoroutine(PlaySequence(lines));
+        sequenceRoutine = StartCoroutine(
+            PlaySequence(lines, voiceClips));
     }
 
-    private IEnumerator PlaySequence(string[] lines)
+    private IEnumerator PlaySequence(
+        string[] lines,
+        AudioClip[] voiceClips)
     {
-        sequenceText.gameObject.SetActive(true);
-        sequenceText.text = string.Empty;
+        if (sequenceText != null)
+        {
+            sequenceText.gameObject.SetActive(true);
+            sequenceText.text = string.Empty;
+        }
 
-        continueButton.gameObject.SetActive(false);
+        if (continueButton != null)
+            continueButton.gameObject.SetActive(false);
 
         yield return new WaitForSeconds(initialDelay);
 
         if (lines != null)
         {
-            foreach (string line in lines)
+            for (int i = 0; i < lines.Length; i++)
             {
-                sequenceText.text = line;
-                yield return new WaitForSeconds(timeBetweenLines);
+                if (sequenceText != null)
+                    sequenceText.text = lines[i];
+
+                AudioClip currentClip = null;
+
+                if (voiceClips != null && i < voiceClips.Length)
+                    currentClip = voiceClips[i];
+
+                if (currentClip != null && robotVoiceSource != null)
+                {
+                    robotVoiceSource.clip = currentClip;
+                    robotVoiceSource.Play();
+
+                    yield return new WaitWhile(
+                        () => robotVoiceSource.isPlaying);
+                }
+                else
+                {
+                    yield return new WaitForSeconds(
+                        fallbackLineDuration);
+                }
+
+                if (pauseBetweenLines > 0f)
+                    yield return new WaitForSeconds(
+                        pauseBetweenLines);
             }
         }
 
-        continueButton.gameObject.SetActive(true);
+        if (continueButton != null)
+            continueButton.gameObject.SetActive(true);
     }
 
     private void HandleContinueClicked()
     {
-        continueButton.interactable = false;
+        if (continueButton != null)
+            continueButton.interactable = false;
 
         HideUI();
         continueAction?.Invoke();
-
-        continueButton.interactable = true;
     }
 
     private void HideUI()
     {
+        if (robotVoiceSource != null &&
+            robotVoiceSource.isPlaying)
+        {
+            robotVoiceSource.Stop();
+        }
+
         if (sequenceText != null)
         {
             sequenceText.text = string.Empty;
@@ -87,6 +142,21 @@ public class MemoryTransitionUI : MonoBehaviour
         }
 
         if (continueButton != null)
+        {
             continueButton.gameObject.SetActive(false);
+            continueButton.interactable = true;
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (sequenceRoutine != null)
+        {
+            StopCoroutine(sequenceRoutine);
+            sequenceRoutine = null;
+        }
+
+        if (robotVoiceSource != null)
+            robotVoiceSource.Stop();
     }
 }

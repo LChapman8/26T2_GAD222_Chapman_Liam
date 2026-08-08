@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -5,24 +7,66 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(Collider))]
 public class MemoryEnvironmentTrigger : MonoBehaviour
 {
-    [Header("Prompt")]
+    [Serializable]
+    public class DialogueLine
+    {
+        [Header("Subtitle")]
+        public string speakerName;
+
+        [TextArea(2, 5)]
+        public string subtitle;
+
+        [Header("Audio")]
+        public AudioClip audioClip;
+
+        [Tooltip("Optional pause after this line finishes.")]
+        [Min(0f)]
+        public float pauseAfterLine = 0.15f;
+    }
+
+    [Header("Interaction Prompt")]
     [SerializeField] private GameObject promptUI;
     [SerializeField] private TMP_Text promptText;
 
     [SerializeField]
-    private string promptMessage = "Press E to access memory";
+    private string promptMessage = "Press E to interact";
+
+    [Header("Dialogue")]
+    [SerializeField] private DialogueLine[] dialogueLines;
+    [SerializeField] private AudioSource dialogueAudioSource;
+    [SerializeField] private DialogueSubtitleUI subtitleUI;
+
+    [Header("Player Control During Dialogue")]
+    [Tooltip(
+        "Drag your First Person Controller and any camera-look scripts here. " +
+        "They will be disabled while dialogue plays.")]
+    [SerializeField] private Behaviour[] playerControlScripts;
 
     [Header("Environment References")]
     [SerializeField] private GameObject currentEnvironment;
     [SerializeField] private GameObject transitionEnvironment;
     [SerializeField] private GameObject nextEnvironment;
 
-    [Header("Transition Content")]
+    [Header("Memory Transition Content")]
     [TextArea(2, 5)]
     [SerializeField] private string[] transitionLines;
 
+    [Tooltip(
+        "Add one robot voice clip for each transition line. " +
+        "The order must match the Transition Lines array.")]
+    [SerializeField] private AudioClip[] transitionVoiceClips;
+
     [SerializeField]
     private string transitionButtonText = "Enter Memory";
+
+    [Header("Memory Path Tracking")]
+    [Tooltip(
+        "Enable this ONLY on the three initial birthday-party choices.")]
+    [SerializeField] private bool setsMemoryPath = false;
+
+    [SerializeField]
+    private MemoryPathTracker.MemoryPath memoryPath =
+        MemoryPathTracker.MemoryPath.None;
 
     [Header("Manager")]
     [SerializeField]
@@ -33,6 +77,9 @@ public class MemoryEnvironmentTrigger : MonoBehaviour
 
     private bool playerInside;
     private bool hasTriggered;
+    private bool dialoguePlaying;
+
+    private Coroutine dialogueRoutine;
 
     private void Awake()
     {
@@ -40,26 +87,44 @@ public class MemoryEnvironmentTrigger : MonoBehaviour
         triggerCollider.isTrigger = true;
 
         HidePrompt();
+
+        if (subtitleUI != null)
+            subtitleUI.Hide();
+
+        if (dialogueAudioSource != null)
+        {
+            dialogueAudioSource.playOnAwake = false;
+            dialogueAudioSource.loop = false;
+        }
     }
 
     private void Update()
     {
-        if (!playerInside || hasTriggered)
+        if (!playerInside || hasTriggered || dialoguePlaying)
             return;
 
         if (Keyboard.current != null &&
             Keyboard.current.eKey.wasPressedThisFrame)
         {
-            ActivateTransition();
+            BeginInteraction();
         }
     }
 
-    private void ActivateTransition()
+    private void BeginInteraction()
     {
         if (transitionManager == null)
         {
             Debug.LogError(
-                $"No transition manager assigned to {gameObject.name}.");
+                $"No EnvironmentTransitionManager assigned to {gameObject.name}.");
+            return;
+        }
+
+        if (dialogueAudioSource == null &&
+            dialogueLines != null &&
+            dialogueLines.Length > 0)
+        {
+            Debug.LogError(
+                $"No dialogue AudioSource assigned to {gameObject.name}.");
             return;
         }
 
@@ -68,20 +133,140 @@ public class MemoryEnvironmentTrigger : MonoBehaviour
 
         HidePrompt();
 
+        // Record the player's chosen memory path.
+        // Only enabled on the three birthday-party branch triggers.
+        if (setsMemoryPath)
+        {
+            if (MemoryPathTracker.Instance != null)
+            {
+                MemoryPathTracker.Instance.SetPath(memoryPath);
+            }
+            else
+            {
+                Debug.LogWarning(
+                    "This trigger is trying to set a memory path, " +
+                    "but no MemoryPathTracker exists in the scene.");
+            }
+        }
+
+        if (dialogueRoutine != null)
+            StopCoroutine(dialogueRoutine);
+
+        dialogueRoutine = StartCoroutine(PlayDialogueSequence());
+    }
+
+    private IEnumerator PlayDialogueSequence()
+    {
+        dialoguePlaying = true;
+
+        SetPlayerControl(false);
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
+        if (dialogueLines != null)
+        {
+            foreach (DialogueLine line in dialogueLines)
+            {
+                if (line == null)
+                    continue;
+
+                // Show subtitle.
+                if (subtitleUI != null)
+                {
+                    subtitleUI.Show(
+                        line.speakerName,
+                        line.subtitle);
+                }
+
+                // Play assigned dialogue audio.
+                if (line.audioClip != null &&
+                    dialogueAudioSource != null)
+                {
+                    dialogueAudioSource.clip = line.audioClip;
+                    dialogueAudioSource.Play();
+
+                    // Wait until this voice line has completely finished.
+                    yield return new WaitWhile(
+                        () => dialogueAudioSource.isPlaying);
+                }
+                else
+                {
+                    // If no audio exists, leave the subtitle
+                    // on screen for a readable amount of time.
+                    float fallbackDuration =
+                        CalculateFallbackSubtitleDuration(
+                            line.subtitle);
+
+                    yield return new WaitForSeconds(
+                        fallbackDuration);
+                }
+
+                // Optional pause between spoken lines.
+                if (line.pauseAfterLine > 0f)
+                {
+                    yield return new WaitForSeconds(
+                        line.pauseAfterLine);
+                }
+            }
+        }
+
+        if (subtitleUI != null)
+            subtitleUI.Hide();
+
+        dialoguePlaying = false;
+
+        SetPlayerControl(true);
+
+        BeginMemoryTransition();
+    }
+
+    private void BeginMemoryTransition()
+    {
         transitionManager.BeginTransition(
             currentEnvironment,
             transitionEnvironment,
             nextEnvironment,
             transitionLines,
+            transitionVoiceClips,
             transitionButtonText);
+    }
+
+    private float CalculateFallbackSubtitleDuration(
+        string text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return 1f;
+
+        return Mathf.Max(
+            1.5f,
+            text.Length / 14f);
+    }
+
+    private void SetPlayerControl(bool enabled)
+    {
+        if (playerControlScripts == null)
+            return;
+
+        foreach (Behaviour controlScript
+                 in playerControlScripts)
+        {
+            if (controlScript != null)
+                controlScript.enabled = enabled;
+        }
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!other.CompareTag("Player") || hasTriggered)
+        if (!other.CompareTag("Player") ||
+            hasTriggered ||
+            dialoguePlaying)
+        {
             return;
+        }
 
         playerInside = true;
+
         ShowPrompt();
     }
 
@@ -91,6 +276,7 @@ public class MemoryEnvironmentTrigger : MonoBehaviour
             return;
 
         playerInside = false;
+
         HidePrompt();
     }
 
@@ -107,5 +293,22 @@ public class MemoryEnvironmentTrigger : MonoBehaviour
     {
         if (promptUI != null)
             promptUI.SetActive(false);
+    }
+
+    private void OnDisable()
+    {
+        if (dialogueAudioSource != null &&
+            dialogueAudioSource.isPlaying)
+        {
+            dialogueAudioSource.Stop();
+        }
+
+        if (subtitleUI != null)
+            subtitleUI.Hide();
+
+        SetPlayerControl(true);
+
+        dialoguePlaying = false;
+        playerInside = false;
     }
 }

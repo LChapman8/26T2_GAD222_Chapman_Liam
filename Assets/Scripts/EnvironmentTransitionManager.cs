@@ -18,6 +18,7 @@ public class EnvironmentTransitionManager : MonoBehaviour
         GameObject transitionEnvironment,
         GameObject nextEnvironment,
         string[] transitionLines,
+        AudioClip[] transitionVoiceClips,
         string buttonLabel)
     {
         if (transitionInProgress)
@@ -28,6 +29,7 @@ public class EnvironmentTransitionManager : MonoBehaviour
             transitionEnvironment,
             nextEnvironment,
             transitionLines,
+            transitionVoiceClips,
             buttonLabel));
     }
 
@@ -36,6 +38,7 @@ public class EnvironmentTransitionManager : MonoBehaviour
         GameObject transitionEnvironment,
         GameObject nextEnvironment,
         string[] transitionLines,
+        AudioClip[] transitionVoiceClips,
         string buttonLabel)
     {
         transitionInProgress = true;
@@ -58,13 +61,15 @@ public class EnvironmentTransitionManager : MonoBehaviour
 
         MemoryTransitionUI transitionUI =
             transitionEnvironment != null
-                ? transitionEnvironment.GetComponentInChildren<MemoryTransitionUI>(true)
+                ? transitionEnvironment
+                    .GetComponentInChildren<MemoryTransitionUI>(true)
                 : null;
 
         if (transitionUI != null)
         {
             transitionUI.Begin(
                 transitionLines,
+                transitionVoiceClips,
                 buttonLabel,
                 CompleteTransition);
         }
@@ -72,6 +77,7 @@ public class EnvironmentTransitionManager : MonoBehaviour
         {
             Debug.LogError(
                 "No MemoryTransitionUI was found inside the transition environment.");
+
             transitionInProgress = false;
         }
     }
@@ -105,7 +111,9 @@ public class EnvironmentTransitionManager : MonoBehaviour
         transitionInProgress = false;
     }
 
-    private IEnumerator Fade(float startAlpha, float endAlpha)
+    private IEnumerator Fade(
+        float startAlpha,
+        float endAlpha)
     {
         if (fadePanel == null)
             yield break;
