@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public class FinalSceneSequence : MonoBehaviour
@@ -31,7 +32,8 @@ public class FinalSceneSequence : MonoBehaviour
     [SerializeField] private Behaviour[] playerControlScripts;
 
     [Header("Start Settings")]
-    [Tooltip("Delay after the final scene becomes active before dialogue begins.")]
+    [Tooltip(
+        "Delay after the final scene becomes active before dialogue begins.")]
     [SerializeField] private float startDelay = 0.5f;
 
     [Header("Ending Fade")]
@@ -54,26 +56,35 @@ public class FinalSceneSequence : MonoBehaviour
         "If your life could only be remembered through a handful of memories...\n\nWhich memories would remain?";
 
     private bool hasStarted;
+    private bool dialoguePlaying;
+    private bool skipCurrentLine;
 
     private void Awake()
     {
         if (endingPanel != null)
+        {
             endingPanel.SetActive(false);
+        }
 
         if (finalQuestionPanel != null)
+        {
             finalQuestionPanel.SetActive(false);
+        }
 
         if (blackFadePanel != null)
         {
             blackFadePanel.alpha = 0f;
             blackFadePanel.blocksRaycasts = false;
+
             blackFadePanel.gameObject.SetActive(false);
         }
 
         if (continueButton != null)
         {
             continueButton.onClick.RemoveAllListeners();
-            continueButton.onClick.AddListener(ShowFinalQuestion);
+
+            continueButton.onClick.AddListener(
+                ShowFinalQuestion);
         }
 
         if (dialogueAudioSource != null)
@@ -87,7 +98,33 @@ public class FinalSceneSequence : MonoBehaviour
     {
         if (!hasStarted)
         {
-            StartCoroutine(StartFinalSequenceAutomatically());
+            StartCoroutine(
+                StartFinalSequenceAutomatically());
+        }
+    }
+
+    private void Update()
+    {
+        if (!dialoguePlaying)
+            return;
+
+        bool skipPressed = false;
+
+        if (Keyboard.current != null &&
+            Keyboard.current.spaceKey.wasPressedThisFrame)
+        {
+            skipPressed = true;
+        }
+
+        if (Mouse.current != null &&
+            Mouse.current.leftButton.wasPressedThisFrame)
+        {
+            skipPressed = true;
+        }
+
+        if (skipPressed)
+        {
+            SkipCurrentDialogueLine();
         }
     }
 
@@ -105,7 +142,8 @@ public class FinalSceneSequence : MonoBehaviour
 
         hasStarted = true;
 
-        StartCoroutine(FinalSequenceRoutine());
+        StartCoroutine(
+            FinalSequenceRoutine());
     }
 
     private IEnumerator FinalSequenceRoutine()
@@ -114,6 +152,8 @@ public class FinalSceneSequence : MonoBehaviour
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+
+        dialoguePlaying = true;
 
         // -------------------------
         // PLAY FINAL DIALOGUE
@@ -126,6 +166,12 @@ public class FinalSceneSequence : MonoBehaviour
                 if (line == null)
                     continue;
 
+                skipCurrentLine = false;
+
+                // -------------------------
+                // SHOW SUBTITLE
+                // -------------------------
+
                 if (subtitleUI != null)
                 {
                     subtitleUI.Show(
@@ -133,34 +179,92 @@ public class FinalSceneSequence : MonoBehaviour
                         line.subtitle);
                 }
 
+                // -------------------------
+                // PLAY VOICE LINE
+                // -------------------------
+
                 if (line.audioClip != null &&
                     dialogueAudioSource != null)
                 {
-                    dialogueAudioSource.clip = line.audioClip;
+                    dialogueAudioSource.clip =
+                        line.audioClip;
+
                     dialogueAudioSource.Play();
 
-                    yield return new WaitWhile(
-                        () => dialogueAudioSource.isPlaying);
+                    while (
+                        dialogueAudioSource.isPlaying &&
+                        !skipCurrentLine)
+                    {
+                        yield return null;
+                    }
+
+                    if (skipCurrentLine)
+                    {
+                        dialogueAudioSource.Stop();
+
+                        skipCurrentLine = false;
+
+                        continue;
+                    }
                 }
+
+                // -------------------------
+                // SUBTITLE-ONLY FALLBACK
+                // -------------------------
+
                 else
                 {
                     float fallbackDuration =
-                        CalculateFallbackDuration(line.subtitle);
+                        CalculateFallbackDuration(
+                            line.subtitle);
 
-                    yield return new WaitForSeconds(
-                        fallbackDuration);
+                    float elapsed = 0f;
+
+                    while (
+                        elapsed < fallbackDuration &&
+                        !skipCurrentLine)
+                    {
+                        elapsed += Time.deltaTime;
+
+                        yield return null;
+                    }
+
+                    if (skipCurrentLine)
+                    {
+                        skipCurrentLine = false;
+
+                        continue;
+                    }
                 }
+
+                // -------------------------
+                // PAUSE AFTER LINE
+                // -------------------------
 
                 if (line.pauseAfterLine > 0f)
                 {
-                    yield return new WaitForSeconds(
-                        line.pauseAfterLine);
+                    float pauseElapsed = 0f;
+
+                    while (
+                        pauseElapsed < line.pauseAfterLine &&
+                        !skipCurrentLine)
+                    {
+                        pauseElapsed += Time.deltaTime;
+
+                        yield return null;
+                    }
+
+                    skipCurrentLine = false;
                 }
             }
         }
 
+        dialoguePlaying = false;
+
         if (subtitleUI != null)
+        {
             subtitleUI.Hide();
+        }
 
         // -------------------------
         // FADE TO BLACK
@@ -178,10 +282,26 @@ public class FinalSceneSequence : MonoBehaviour
         BuildEndingSummary();
 
         if (endingPanel != null)
+        {
             endingPanel.SetActive(true);
+        }
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+    }
+
+    private void SkipCurrentDialogueLine()
+    {
+        if (!dialoguePlaying)
+            return;
+
+        skipCurrentLine = true;
+
+        if (dialogueAudioSource != null &&
+            dialogueAudioSource.isPlaying)
+        {
+            dialogueAudioSource.Stop();
+        }
     }
 
     private void BuildEndingSummary()
@@ -208,9 +328,7 @@ public class FinalSceneSequence : MonoBehaviour
                     "His first date with the woman he loved.\n" +
                     "His wedding day.\n" +
                     "The birth of his daughter, Daisy.\n" +
-                    "A day fishing with his father.\n" +
-                    "A family holiday with his parents.\n" +
-                    "His parents' final goodbye.";
+                    "The life and death of his parents.";
 
                 break;
 
@@ -226,9 +344,7 @@ public class FinalSceneSequence : MonoBehaviour
                     "His passion for science.\n" +
                     "His university graduation.\n" +
                     "The technology he spent his life creating.\n" +
-                    "A day fishing with his father.\n" +
-                    "A family holiday with his parents.\n" +
-                    "His parents' final goodbye.";
+                    "The life and death of his parents.";
 
                 break;
 
@@ -245,7 +361,6 @@ public class FinalSceneSequence : MonoBehaviour
                     "His wedding day.\n" +
                     "The birth of his daughter, Daisy.\n" +
                     "His passion for science.\n" +
-                    "His university graduation.\n" +
                     "The technology he spent his life creating.";
 
                 break;
@@ -265,15 +380,24 @@ public class FinalSceneSequence : MonoBehaviour
     private void ShowFinalQuestion()
     {
         if (endingPanel != null)
+        {
             endingPanel.SetActive(false);
+        }
 
         if (finalQuestionPanel != null)
+        {
             finalQuestionPanel.SetActive(true);
+        }
 
         if (finalQuestionText != null)
-            finalQuestionText.text = finalQuestion;
+        {
+            finalQuestionText.text =
+                finalQuestion;
+        }
 
-        Cursor.lockState = CursorLockMode.None;
+        Cursor.lockState =
+            CursorLockMode.None;
+
         Cursor.visible = true;
     }
 
@@ -283,6 +407,7 @@ public class FinalSceneSequence : MonoBehaviour
             yield break;
 
         blackFadePanel.gameObject.SetActive(true);
+
         blackFadePanel.blocksRaycasts = true;
 
         float elapsed = 0f;
@@ -303,7 +428,8 @@ public class FinalSceneSequence : MonoBehaviour
         blackFadePanel.alpha = 1f;
     }
 
-    private float CalculateFallbackDuration(string text)
+    private float CalculateFallbackDuration(
+        string text)
     {
         if (string.IsNullOrWhiteSpace(text))
             return 1f;
@@ -313,15 +439,38 @@ public class FinalSceneSequence : MonoBehaviour
             text.Length / 14f);
     }
 
-    private void SetPlayerControl(bool enabled)
+    private void SetPlayerControl(
+        bool enabled)
     {
         if (playerControlScripts == null)
             return;
 
-        foreach (Behaviour controlScript in playerControlScripts)
+        foreach (Behaviour controlScript
+                 in playerControlScripts)
         {
             if (controlScript != null)
+            {
                 controlScript.enabled = enabled;
+            }
         }
+    }
+
+    private void OnDisable()
+    {
+        if (dialogueAudioSource != null &&
+            dialogueAudioSource.isPlaying)
+        {
+            dialogueAudioSource.Stop();
+        }
+
+        if (subtitleUI != null)
+        {
+            subtitleUI.Hide();
+        }
+
+        SetPlayerControl(true);
+
+        dialoguePlaying = false;
+        skipCurrentLine = false;
     }
 }

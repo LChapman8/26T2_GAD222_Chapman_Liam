@@ -79,6 +79,8 @@ public class MemoryEnvironmentTrigger : MonoBehaviour
     private bool hasTriggered;
     private bool dialoguePlaying;
 
+    private bool skipCurrentLine;
+
     private Coroutine dialogueRoutine;
 
     private void Awake()
@@ -100,7 +102,39 @@ public class MemoryEnvironmentTrigger : MonoBehaviour
 
     private void Update()
     {
-        if (!playerInside || hasTriggered || dialoguePlaying)
+        // --------------------------------
+        // DIALOGUE SKIPPING
+        // --------------------------------
+
+        if (dialoguePlaying)
+        {
+            bool skipPressed = false;
+
+            if (Keyboard.current != null &&
+                Keyboard.current.spaceKey.wasPressedThisFrame)
+            {
+                skipPressed = true;
+            }
+
+            if (Mouse.current != null &&
+                Mouse.current.leftButton.wasPressedThisFrame)
+            {
+                skipPressed = true;
+            }
+
+            if (skipPressed)
+            {
+                SkipCurrentDialogueLine();
+            }
+
+            return;
+        }
+
+        // --------------------------------
+        // NORMAL INTERACTION
+        // --------------------------------
+
+        if (!playerInside || hasTriggered)
             return;
 
         if (Keyboard.current != null &&
@@ -116,6 +150,7 @@ public class MemoryEnvironmentTrigger : MonoBehaviour
         {
             Debug.LogError(
                 $"No EnvironmentTransitionManager assigned to {gameObject.name}.");
+
             return;
         }
 
@@ -125,6 +160,7 @@ public class MemoryEnvironmentTrigger : MonoBehaviour
         {
             Debug.LogError(
                 $"No dialogue AudioSource assigned to {gameObject.name}.");
+
             return;
         }
 
@@ -134,7 +170,6 @@ public class MemoryEnvironmentTrigger : MonoBehaviour
         HidePrompt();
 
         // Record the player's chosen memory path.
-        // Only enabled on the three birthday-party branch triggers.
         if (setsMemoryPath)
         {
             if (MemoryPathTracker.Instance != null)
@@ -152,7 +187,8 @@ public class MemoryEnvironmentTrigger : MonoBehaviour
         if (dialogueRoutine != null)
             StopCoroutine(dialogueRoutine);
 
-        dialogueRoutine = StartCoroutine(PlayDialogueSequence());
+        dialogueRoutine =
+            StartCoroutine(PlayDialogueSequence());
     }
 
     private IEnumerator PlayDialogueSequence()
@@ -171,7 +207,12 @@ public class MemoryEnvironmentTrigger : MonoBehaviour
                 if (line == null)
                     continue;
 
-                // Show subtitle.
+                skipCurrentLine = false;
+
+                // -------------------------
+                // SHOW SUBTITLE
+                // -------------------------
+
                 if (subtitleUI != null)
                 {
                     subtitleUI.Show(
@@ -179,34 +220,84 @@ public class MemoryEnvironmentTrigger : MonoBehaviour
                         line.subtitle);
                 }
 
-                // Play assigned dialogue audio.
+                // -------------------------
+                // PLAY VOICE LINE
+                // -------------------------
+
                 if (line.audioClip != null &&
                     dialogueAudioSource != null)
                 {
-                    dialogueAudioSource.clip = line.audioClip;
+                    dialogueAudioSource.clip =
+                        line.audioClip;
+
                     dialogueAudioSource.Play();
 
-                    // Wait until this voice line has completely finished.
-                    yield return new WaitWhile(
-                        () => dialogueAudioSource.isPlaying);
+                    while (
+                        dialogueAudioSource.isPlaying &&
+                        !skipCurrentLine)
+                    {
+                        yield return null;
+                    }
+
+                    // If player skipped this line,
+                    // stop immediately and advance.
+                    if (skipCurrentLine)
+                    {
+                        dialogueAudioSource.Stop();
+
+                        skipCurrentLine = false;
+
+                        continue;
+                    }
                 }
+
+                // -------------------------
+                // SUBTITLE-ONLY FALLBACK
+                // -------------------------
+
                 else
                 {
-                    // If no audio exists, leave the subtitle
-                    // on screen for a readable amount of time.
                     float fallbackDuration =
                         CalculateFallbackSubtitleDuration(
                             line.subtitle);
 
-                    yield return new WaitForSeconds(
-                        fallbackDuration);
+                    float elapsed = 0f;
+
+                    while (
+                        elapsed < fallbackDuration &&
+                        !skipCurrentLine)
+                    {
+                        elapsed += Time.deltaTime;
+
+                        yield return null;
+                    }
+
+                    if (skipCurrentLine)
+                    {
+                        skipCurrentLine = false;
+
+                        continue;
+                    }
                 }
 
-                // Optional pause between spoken lines.
+                // -------------------------
+                // PAUSE AFTER LINE
+                // -------------------------
+
                 if (line.pauseAfterLine > 0f)
                 {
-                    yield return new WaitForSeconds(
-                        line.pauseAfterLine);
+                    float pauseElapsed = 0f;
+
+                    while (
+                        pauseElapsed < line.pauseAfterLine &&
+                        !skipCurrentLine)
+                    {
+                        pauseElapsed += Time.deltaTime;
+
+                        yield return null;
+                    }
+
+                    skipCurrentLine = false;
                 }
             }
         }
@@ -219,6 +310,20 @@ public class MemoryEnvironmentTrigger : MonoBehaviour
         SetPlayerControl(true);
 
         BeginMemoryTransition();
+    }
+
+    private void SkipCurrentDialogueLine()
+    {
+        if (!dialoguePlaying)
+            return;
+
+        skipCurrentLine = true;
+
+        if (dialogueAudioSource != null &&
+            dialogueAudioSource.isPlaying)
+        {
+            dialogueAudioSource.Stop();
+        }
     }
 
     private void BeginMemoryTransition()
@@ -252,7 +357,9 @@ public class MemoryEnvironmentTrigger : MonoBehaviour
                  in playerControlScripts)
         {
             if (controlScript != null)
+            {
                 controlScript.enabled = enabled;
+            }
         }
     }
 
@@ -283,16 +390,22 @@ public class MemoryEnvironmentTrigger : MonoBehaviour
     private void ShowPrompt()
     {
         if (promptText != null)
+        {
             promptText.text = promptMessage;
+        }
 
         if (promptUI != null)
+        {
             promptUI.SetActive(true);
+        }
     }
 
     private void HidePrompt()
     {
         if (promptUI != null)
+        {
             promptUI.SetActive(false);
+        }
     }
 
     private void OnDisable()
@@ -304,10 +417,13 @@ public class MemoryEnvironmentTrigger : MonoBehaviour
         }
 
         if (subtitleUI != null)
+        {
             subtitleUI.Hide();
+        }
 
         SetPlayerControl(true);
 
+        skipCurrentLine = false;
         dialoguePlaying = false;
         playerInside = false;
     }
